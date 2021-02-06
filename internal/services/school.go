@@ -1,31 +1,32 @@
-//go:generate moq -out school_service_moq_test.go . SchoolService
-
 package services
 
-import (
-	"../models"
-	"../repositories"
-	"../storage/db"
-	"github.rackspace.com/SegmentSupport/antivirus/pkg/storage/db"
+import(
+	"github.com/jason-costello/schooling-covid/internal/repositories"
+	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
-type SchoolService interface {
+type SchoolService interface{
 
-
-	GetAllCounts() []models.School
 
 }
-func NewActivationService(dbtx storage.DBTX, coreClient Core, skuRPMRepo repositories.SkuToRpmRepository, logger *log.Logger) *activationService {
 
-	return &activationService{
-		db: *storage.Queries,
-		logger:         logger,
+
+type schoolService struct{
+	schoolRepo  *repositories.SchoolRepository
+	districtRepo *repositories.DistrictRepository
+	countRepo *repositories.CountRepository
+	logger *logrus.Logger
+
+}
+func NewSchoolService(schoolRepo *repositories.SchoolRepository, countRepo *repositories.CountRepository, districtRepo *repositories.DistrictRepository, logger *log.Logger) *schoolService {
+
+	return &schoolService{
+		schoolRepo: schoolRepo,
+		districtRepo: districtRepo,
+		countRepo: countRepo,
+		logger: logger,
 	}
 }
 
-type activationService struct {
-	activationRepo repositories.ActivationRepository
-	skuRPMRepo     repositories.SkuToRpmRepository
-	coreClient     Core
-	logger         *log.Logger
-}
+
