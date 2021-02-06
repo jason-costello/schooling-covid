@@ -3,19 +3,17 @@ package repositories
 import (
 	"context"
 	"github.com/jason-costello/schooling-covid/internal/models"
-	"github.com/jason-costello/schooling-covid/internal/storage/db"
-	log "log"
+	storage "github.com/jason-costello/schooling-covid/internal/storage/db"
+	"github.com/sirupsen/logrus"
 )
 
-
-
-type CountRepository interface{
-
-	Add( ctx context.Context,count models.Count, schoolID int) error
-	Update( ctx context.Context,count models.Count) error
-	Get(ctx context.Context,countID int) (models.Count,error)
+type CountRepository interface {
+	Add(ctx context.Context, count models.Count, schoolID int) error
+ 	Update(ctx context.Context, count models.Count, schoolID int)	error
+	Get(ctx context.Context, countID int) (models.Count, error)
 }
-func NewCountRepository(db  *storage.Queries, logger *log.Logger) *countRepository {
+
+func NewCountRepository(db *storage.Queries, logger *logrus.Logger) CountRepository {
 
 	if db == nil {
 		return nil
@@ -29,11 +27,11 @@ func NewCountRepository(db  *storage.Queries, logger *log.Logger) *countReposito
 
 type countRepository struct {
 	db     *storage.Queries
-	logger *log.Logger
+	logger *logrus.Logger
 }
 
-func (c *countRepository) Add(ctx context.Context, count models.Count, schoolID int)error{
-	acd:=storage.AddCountDataParams{
+func (c *countRepository) Add(ctx context.Context, count models.Count, schoolID int) error {
+	acd := storage.AddCountDataParams{
 		SchoolID:    int32(schoolID),
 		Positive:    int32(count.Positive),
 		Symptomatic: int32(count.Symptomatic),
@@ -41,35 +39,33 @@ func (c *countRepository) Add(ctx context.Context, count models.Count, schoolID 
 	}
 	return c.db.AddCountData(ctx, acd)
 }
-func (c *countRepository) Update(ctx context.Context, count models.Count, schoolID int )error{
+func (c *countRepository) Update(ctx context.Context, count models.Count, schoolID int) error {
 
 	ucd := storage.UpdateCountDataParams{
-		SchoolID: int32(schoolID),
-		Positive: int32(count.Positive),
-		Exposed:  int32(count.Exposed),
-		Symptomatic:       int32(count.Symptomatic),
-		ID:  int32(count.ID),
+		SchoolID:    int32(schoolID),
+		Positive:    int32(count.Positive),
+		Exposed:     int32(count.Exposed),
+		Symptomatic: int32(count.Symptomatic),
+		ID:          int32(count.ID),
 	}
 
 	return c.db.UpdateCountData(ctx, ucd)
 
-
 }
-func (c *countRepository) Get(ctx context.Context,countID int) (models.Count, error){
+func (c *countRepository) Get(ctx context.Context, countID int) (models.Count, error) {
 
-
-	cnt, err :=  c.db.GetCountData(ctx, int32(countID))
-	if err != nil{
+	cnt, err := c.db.GetCountData(ctx, int32(countID))
+	if err != nil {
 		return models.Count{}, err
 	}
 
 	mc := models.Count{
-		ID:         int(cnt.ID),
-		Observed:   cnt.CreatedAt,
+		ID:          int(cnt.ID),
+		Observed:    cnt.CreatedAt,
 		Positive:    int(cnt.Positive),
 		Symptomatic: int(cnt.Symptomatic),
 		Exposed:     int(cnt.Exposed),
 	}
-return mc, nil
+	return mc, nil
 
 }
