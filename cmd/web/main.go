@@ -35,10 +35,12 @@ func main(){
 
 
 	r := mux.NewRouter()
+
 	r.HandleFunc("/api/v1/districts", app.GetDistricts).Methods("GET")
 	r.HandleFunc("/api/v1/district/{id}", app.GetDistrict).Methods("GET")
 	r.HandleFunc("/api/v1/district/{id}/schools", app.GetDistrictSchools).Methods("GET")
 	r.HandleFunc("/api/v1/district/{id}/school/{id}", app.GetDistrictSchool).Methods("GET")
+	r.HandleFunc("/", app.GetDistricts).Methods("GET")
 
 
 	app.SetRouter(r)
