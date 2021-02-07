@@ -1,1 +1,3 @@
 .idea
+/cmd/web/app
+/cmd/web/web
