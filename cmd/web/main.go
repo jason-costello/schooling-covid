@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/jason-costello/schooling-covid/internal/server"
 	"github.com/sirupsen/logrus"
@@ -21,7 +22,7 @@ func main(){
 	if err!=nil{
 		panic(err)
 	}
-
+	fmt.Println("Port: ", portStr)
 	dbUrl := os.Getenv("DATABASE_URL")
 
 	dbc := server.DBConfig{
@@ -33,13 +34,17 @@ func main(){
 
 
 	r := mux.NewRouter()
-	r.HandleFunc("/v1/districts", app.GetDistricts).Methods("GET")
-	r.HandleFunc("/v1/district/{id}", app.GetDistrict).Methods("GET")
-	r.HandleFunc("/v1/district/{id}/schools", app.GetDistrictSchools).Methods("GET")
-	r.HandleFunc("/v1/district/{id}/school/{id}", app.GetDistrictSchool).Methods("GET")
+	r.HandleFunc("/api/v1/districts", app.GetDistricts).Methods("GET")
+	r.HandleFunc("/api/v1/district/{id}", app.GetDistrict).Methods("GET")
+	r.HandleFunc("/api/v1/district/{id}/schools", app.GetDistrictSchools).Methods("GET")
+	r.HandleFunc("/api/v1/district/{id}/school/{id}", app.GetDistrictSchool).Methods("GET")
 
 
 	app.SetRouter(r)
+	err = r.Walk(gorillaWalkFn)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	app.Serve()
 
@@ -64,4 +69,12 @@ func main(){
 	log.Println("shutting down")
 	os.Exit(0)
 
+}
+func gorillaWalkFn(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+	path, err := route.GetPathTemplate()
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(path)
+	return nil
 }
