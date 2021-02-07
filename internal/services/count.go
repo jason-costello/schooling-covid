@@ -20,11 +20,9 @@ type countService struct {
 	logger       *logrus.Logger
 }
 
-func NewCountService(schoolRepo *repositories.SchoolRepository, countRepo *repositories.CountRepository, districtRepo *repositories.DistrictRepository, logger *log.Logger) *countService {
+func NewCountService(countRepo *repositories.CountRepository,  logger *log.Logger) *countService {
 
 	return &countService{
-		schoolRepo:   schoolRepo,
-		districtRepo: districtRepo,
 		countRepo:    countRepo,
 		logger:       logger,
 	}

@@ -8,9 +8,11 @@ import (
 )
 
 type DistrictRepository interface {
-	Add(ctx context.Context, district models.District, schoolID int) error
-	Update(ctx context.Context, district models.District, schoolID int) error
-	Get(ctx context.Context, districtID int) (models.District, error)
+	Add(ctx context.Context, district models.District) error
+	Update(ctx context.Context, district models.District) error
+	Districts(ctx context.Context) ([]models.District, error)
+	District(ctx context.Context, districtID int) (models.District, error)
+
 }
 
 func NewDistrictRepository(db *storage.Queries, logger *logrus.Logger) DistrictRepository {
@@ -30,34 +32,51 @@ type districtRepository struct {
 	logger *logrus.Logger
 }
 
-func (c *districtRepository) Add(ctx context.Context, district models.District, schoolID int) error {
+func (d *districtRepository) Add(ctx context.Context, district models.District) error {
 	acd := storage.AddDistrictDataParams{
 		Name:      district.Name,
 		ShortName: district.ShortName,
 	}
-	return c.db.AddDistrictData(ctx, acd)
+	return d.db.AddDistrictData(ctx, acd)
 }
-func (c *districtRepository) Update(ctx context.Context, district models.District, schoolID int) error {
+func (d *districtRepository) Update(ctx context.Context, district models.District) error {
 
 	ucd := storage.UpdateDistrictDataParams{
 		Name:      district.Name,
 		ShortName: district.ShortName,
 	}
 
-	return c.db.UpdateDistrictData(ctx, ucd)
+	return d.db.UpdateDistrictData(ctx, ucd)
 
 }
-func (c *districtRepository) Get(ctx context.Context, districtID int) (models.District, error) {
 
-	d, err := c.db.GetDistrictData(ctx, int32(districtID))
+func (d *districtRepository) Districts(ctx context.Context) ([]models.District, error) {
+
+	dist, err := d.db.GetAllDistricts(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var allDistricts []models.District
+	for _, dd := range dist {
+		allDistricts = append(allDistricts, models.District{
+			ID:        int(dd.ID),
+			Name:      dd.Name,
+			ShortName: dd.ShortName,
+		})
+	}
+	return allDistricts, nil
+}
+func (d *districtRepository) District(ctx context.Context, districtID int) (models.District, error){
+
+	dist, err := d.db.GetDistrictData(ctx, int32(districtID))
 	if err != nil {
 		return models.District{}, err
 	}
 
 	mc := models.District{
-		ID:        int(d.ID),
-		Name:      d.Name,
-		ShortName: d.ShortName,
+		ID:        int(dist.ID),
+		Name:      dist.Name,
+		ShortName: dist.ShortName,
 	}
 	return mc, nil
 

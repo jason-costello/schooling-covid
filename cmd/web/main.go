@@ -1,33 +1,67 @@
 package main
 
 import (
+	"context"
+	"github.com/gorilla/mux"
 	"github.com/jason-costello/schooling-covid/internal/server"
 	"github.com/sirupsen/logrus"
+	"log"
+	"os"
+	"os/signal"
+	"strconv"
+	"time"
 )
 
 func main(){
 
 	logger := logrus.New()
-	dbConfig := server.DBConfig{
-		Host:               "",
-		Port:               0,
-		User:               "",
-		Pass:               "",
-		DBName:             "",
-		SSLMode:            "",
-		SSLCert:            "",
-		SSLKey:             "",
-		SSLServerCA:        "",
-		LoggingEnabled:     false,
-		Dialect:            "",
-		MaxOpenConnections: 0,
-		MaxIdleConnections: 0,
-		ConnMaxLifetime:    0,
-		Logger:             nil,
+
+	portStr := os.Getenv("PORT")
+	port, err := strconv.Atoi(portStr)
+	if err!=nil{
+		panic(err)
 	}
-	app := server.NewApplication(dbConfig, logger)
+
+	dbUrl := os.Getenv("DATABASE_URL")
+
+	dbc := server.DBConfig{
+		URL:  dbUrl  ,
+		Logger: nil,
+	}
+
+	app := server.NewServer(port, dbc, logger)
+
+
+	r := mux.NewRouter()
+	r.HandleFunc("/v1/districts", app.GetDistricts).Methods("GET")
+	r.HandleFunc("/v1/district/{id}", app.GetDistrict).Methods("GET")
+	r.HandleFunc("/v1/district/{id}/schools", app.GetDistrictSchools).Methods("GET")
+	r.HandleFunc("/v1/district/{id}/school/{id}", app.GetDistrictSchool).Methods("GET")
+
+
+	app.SetRouter(r)
 
 	app.Serve()
 
+	c := make(chan os.Signal, 1)
+	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
+	// SIGKILL, SIGQUIT or SIGTERM (Ctrl+/) will not be caught.
+	signal.Notify(c, os.Interrupt)
+
+	// Block until we receive our signal.
+	<-c
+
+	// Create a deadline to wait for.
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+	defer cancel()
+	// Doesn't block if no connections, but will otherwise wait
+	// until the timeout deadline.
+	app.Shutdown(ctx)
+	// Optionally, you could run srv.Shutdown in a goroutine and block on
+	// <-ctx.Done() if your application should wait for other services
+	// to finalize based on context cancellation.
+	log.Println("shutting down")
+	os.Exit(0)
 
 }

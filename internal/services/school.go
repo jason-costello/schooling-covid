@@ -16,12 +16,10 @@ type schoolService struct {
 	logger       *logrus.Logger
 }
 
-func NewSchoolService(schoolRepo *repositories.SchoolRepository, countRepo *repositories.CountRepository, districtRepo *repositories.DistrictRepository, logger *log.Logger) *schoolService {
+func NewSchoolService(schoolRepo *repositories.SchoolRepository, logger *log.Logger) *schoolService {
 
 	return &schoolService{
 		schoolRepo:   schoolRepo,
-		districtRepo: districtRepo,
-		countRepo:    countRepo,
 		logger:       logger,
 	}
 }

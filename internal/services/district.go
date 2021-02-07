@@ -1,27 +1,39 @@
 package services
 
 import (
+	"github.com/jason-costello/schooling-covid/internal/models"
 	"github.com/jason-costello/schooling-covid/internal/repositories"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
 type DistrictService interface {
+
+	Districts() ([]models.District, error)
+	District(id int) (models.District, error)
+
+
 }
 
 type districtService struct {
-	schoolRepo   *repositories.SchoolRepository
 	districtRepo *repositories.DistrictRepository
-	countRepo    *repositories.CountRepository
 	logger       *logrus.Logger
 }
 
-func NewDistrictService(schoolRepo *repositories.SchoolRepository, countRepo *repositories.CountRepository, districtRepo *repositories.DistrictRepository, logger *log.Logger) *districtService {
+func NewDistrictService( districtRepo *repositories.DistrictRepository, logger *log.Logger) *districtService {
 
 	return &districtService{
-		schoolRepo:   schoolRepo,
 		districtRepo: districtRepo,
-		countRepo:    countRepo,
 		logger:       logger,
 	}
+}
+func(d *districtService) Districts() ([]models.District, error){
+
+
+
+	return nil, nil
+}
+func (d *districtService) District(id int) (models.District, error){
+
+return models.District{}, nil
 }
