@@ -81,16 +81,16 @@ func (s *Server) Shutdown(c context.Context) {
 func (s *Server) Serve() {
 	// 	r := mux.NewRouter()
 	var addr = fmt.Sprintf(":%d", s.Port)
+	s.WebServer.Addr = addr
 
 	go func() {
 		if err := http.ListenAndServe(addr, nil); err != nil {
-
 			if err := s.WebServer.ListenAndServe(); err != nil {
 				s.Logger.Println(err)
 			}
 		}
 		}()
-		s.Logger.Info("Serving on 8088")
+		s.Logger.Info("Serving on ", addr)
 	}
 
 func (s *Server) ServeTLS() {

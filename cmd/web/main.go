@@ -20,11 +20,12 @@ func main(){
 	portStr := os.Getenv("PORT")
 	port, err := strconv.Atoi(portStr)
 	if err!=nil{
-		panic(err)
+		panic("no port provided")
 	}
-	fmt.Println("Port: ", portStr)
 	dbUrl := os.Getenv("DATABASE_URL")
-
+	if dbUrl == ""{
+		panic("no db url provided")
+	}
 	dbc := server.DBConfig{
 		URL:  dbUrl  ,
 		Logger: nil,
