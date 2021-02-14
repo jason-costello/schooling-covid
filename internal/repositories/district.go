@@ -19,21 +19,17 @@ type District interface {
 
 // NewDistrictRepository returns an instance of the District Interface that provides
 // access to the function needed to collect district level data
-func NewDistrictRepository(db storage.DBTX, logger *logrus.Logger) District {
-
-
-	queries := storage.New(db)
+func NewDistrictRepository(db *storage.Queries, logger *logrus.Logger) District {
 
 	if db == nil {
 		return nil
 	}
 	return &districtRepository{
-		db:     queries,
+		db:     db,
 		logger: logger,
 	}
 
 }
-
 type districtRepository struct {
 	db     *storage.Queries
 	logger *logrus.Logger
@@ -114,12 +110,6 @@ func (d *districtRepository) DistrictByShortName(ctx context.Context, districtSh
 
 // GetName will return the full district name when passed the shortname.
 func (d *districtRepository) GetName(ctx context.Context, districtShortName string) (string, error) {
-
-	if ctx == nil{
-		ctx = context.Background()
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 100 * time.Second)
-		defer cancel()
 	dist, err := d.db.GetDistrict(ctx, districtShortName)
 	if err != nil {
 		return "", err

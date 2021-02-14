@@ -17,6 +17,7 @@ type Server struct {
 	SchoolDistrict services.SchoolDistrict
 	WebServer      *http.Server
 	Logger         *logrus.Logger
+	Logger         *logrus.Logger
 	DBConfig       DBConfig
 	DB             storage.DBTX
 	Port           int
