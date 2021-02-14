@@ -3,62 +3,49 @@ package server
 import (
 	"context"
 	"fmt"
+	"log"
 
+	"github.com/gorilla/mux"
 	"github.com/jason-costello/schooling-covid/internal/repositories"
 	"github.com/jason-costello/schooling-covid/internal/services"
 	storage "github.com/jason-costello/schooling-covid/internal/storage/db"
-	"net/http"
-	log "github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus"
-	"github.com/gorilla/mux"
-
+	"net/http"
 )
 
-
-
-
 type Server struct {
-	CountSvc services.CountService
-	SchoolSvc       services.SchoolService
-	DistrictSvc   services.DistrictService
-	WebServer     *http.Server
-	Logger        *log.Logger
-	DBConfig	DBConfig
-	DB storage.DBTX
-	Port int
+	SchoolDistrict services.SchoolDistrict
+	WebServer      *http.Server
+	Logger         *logrus.Logger
+	DBConfig       DBConfig
+	DB             storage.DBTX
+	Port           int
 }
 
-
-func NewServer(port int, dbConfig DBConfig, logger *logrus.Logger) *Server{
+func NewServer(port int, dbConfig DBConfig, logger *logrus.Logger) *Server {
 
 	dbctx := context.Background()
 	db, err := dbConfig.NewDB(dbctx)
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
 
 	queries := storage.New(db)
-	schoolRepo := repositories.NewSchoolRepository(queries, logger)
-	countRepo := repositories.NewCountRepository(queries, logger)
 	districtRepo := repositories.NewDistrictRepository(queries, logger)
-	countSvc := services.NewCountService(&countRepo, logger)
-	schoolSvc := services.NewSchoolService(&schoolRepo, logger)
-	districtSvc := services.NewDistrictService(&districtRepo, logger)
+	schoolDistrict := services.NewSchoolDistrict(districtRepo,logger)
 
-	s :=  &Server{
-		CountSvc:    countSvc,
-		SchoolSvc:   schoolSvc,
-		DistrictSvc: districtSvc,
-		WebServer:   &http.Server{},
-		Logger:      logger,
-		DB:   db,
-		Port: port,
+	s := &Server{
+
+		SchoolDistrict: schoolDistrict,
+		WebServer:      &http.Server{},
+		Logger:         logger,
+		DB:             db,
+		Port:           port,
 	}
 
-return s
+	return s
 
 }
-
 
 func (s *Server) SetRouter(r *mux.Router) {
 	if r == nil {
@@ -84,14 +71,14 @@ func (s *Server) Serve() {
 	s.WebServer.Addr = addr
 
 	go func() {
-		if err := http.ListenAndServe(addr, nil); err != nil {
+		if err := http.ListenAndServe(addr, s.WebServer.Handler); err != nil {
 			if err := s.WebServer.ListenAndServe(); err != nil {
 				s.Logger.Println(err)
 			}
 		}
-		}()
-		s.Logger.Info("Serving on ", addr)
-	}
+	}()
+	s.Logger.Info("Serving on ", addr)
+}
 
 func (s *Server) ServeTLS() {
 	// 	r := mux.NewRouter()
@@ -103,4 +90,3 @@ func (s *Server) ServeTLS() {
 	}()
 
 }
-

@@ -1,9 +1,12 @@
 package models
 
+
+// School captures the data for an individual school that can only belong to one district.  A school will have
+// many school counts
 type School struct {
-	ID         int
-	DistrictID int
-	Name       string
-	ShortName  string
-	Counts     []Count
+	DistrictShortName string
+	Name              string
+	ShortName         string
+	Counts            SchoolCounts
 }
+

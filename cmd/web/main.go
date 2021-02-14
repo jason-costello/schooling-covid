@@ -10,38 +10,49 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"time"
 )
 
-func main(){
+func main() {
 
 	logger := logrus.New()
 
+	logLevel := os.Getenv("LogLevel")
+
+	switch strings.ToLower(logLevel){
+	case "debug":
+		logger.Level = logrus.DebugLevel
+	case "info":
+		logger.Level = logrus.InfoLevel
+	case "warning":
+		logger.Level = logrus.WarnLevel
+	case "error":
+		logger.Level = logrus.ErrorLevel
+	default:
+		logger.Level = logrus.ErrorLevel
+	}
+
+
 	portStr := os.Getenv("PORT")
 	port, err := strconv.Atoi(portStr)
-	if err!=nil{
+	if err != nil {
 		panic("no port provided")
 	}
-	dbUrl := os.Getenv("DATABASE_URL")
-	if dbUrl == ""{
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
 		panic("no db url provided")
 	}
 	dbc := server.DBConfig{
-		URL:  dbUrl  ,
-		Logger: nil,
+		URL:    dbURL,
 	}
 
 	app := server.NewServer(port, dbc, logger)
 
-
 	r := mux.NewRouter()
 
 	r.HandleFunc("/api/v1/districts", app.GetDistricts).Methods("GET")
-	r.HandleFunc("/api/v1/district/{id}", app.GetDistrict).Methods("GET")
-	r.HandleFunc("/api/v1/district/{id}/schools", app.GetDistrictSchools).Methods("GET")
-	r.HandleFunc("/api/v1/district/{id}/school/{id}", app.GetDistrictSchool).Methods("GET")
-	r.HandleFunc("/", app.GetDistricts).Methods("GET")
-
+	r.HandleFunc("/api/v1/district/{did}", app.GetDistrictSchools).Methods("GET")
 
 	app.SetRouter(r)
 	err = r.Walk(gorillaWalkFn)
@@ -58,7 +69,6 @@ func main(){
 
 	// Block until we receive our signal.
 	<-c
-
 	// Create a deadline to wait for.
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 

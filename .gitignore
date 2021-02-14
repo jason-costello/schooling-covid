@@ -1,3 +1,5 @@
 .idea
 /cmd/web/app
 /cmd/web/web
+/cmd/web/main
+.DS_Store

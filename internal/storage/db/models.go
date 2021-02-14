@@ -6,18 +6,26 @@ import (
 	"time"
 )
 
+type CollectionJob struct {
+	ID                int32
+	DistrictShortName string
+	SchoolShortName   string
+	Url               string
+	CreatedAt         time.Time
+	UpdtaedAt         time.Time
+}
+
 type Count struct {
-	ID          int32
-	SchoolID    int32
-	Positive    int32
-	Symptomatic int32
-	Exposed     int32
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	Positive        int32
+	Symptomatic     int32
+	Exposed         int32
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	SchoolShortName string
+	CountDate       string
 }
 
 type District struct {
-	ID        int32
 	Name      string
 	ShortName string
 	CreatedAt time.Time
@@ -25,10 +33,9 @@ type District struct {
 }
 
 type School struct {
-	ID         int32
-	Name       string
-	ShortName  string
-	DistrictID int32
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	Name              string
+	ShortName         string
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+	DistrictShortName string
 }
